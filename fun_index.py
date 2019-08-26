@@ -247,7 +247,7 @@ def plot_index(data, Qxy_list, Qz_list, hkl_list, **param_plot):
     ax1.set_aspect('equal', 'box')
     for i, txt in enumerate(hkl_list):
         #plt.annotate(txt, (Qxy_list[i], Qz_list[i]*(1+random()/10)),color=color,fontsize=15, fontweight='bold')
-        plt.annotate(txt, (Qxy_list[i], Qz_list[i],color=color,fontsize=15, fontweight='bold')
+        plt.annotate(txt, (Qxy_list[i], Qz_list[i]) ,color=color,fontsize=15, fontweight='bold')
 
     if 0:
         ax2 = fig.add_subplot(122)
@@ -261,7 +261,7 @@ def plot_index(data, Qxy_list, Qz_list, hkl_list, **param_plot):
         if not data: plt.grid()
         ax2.set_aspect('equal', 'box')
         for i, txt in enumerate(hkl_list):
-            plt.annotate(txt, (Qxy_list[i], Qz_list[i],color=color,fontsize=15, fontweight='bold')
+            plt.annotate(txt, (Qxy_list[i], Qz_list[i]) ,color=color,fontsize=15, fontweight='bold')
 
 
     plt.show()
