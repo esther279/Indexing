@@ -246,7 +246,8 @@ def plot_index(data, Qxy_list, Qz_list, hkl_list, **param_plot):
     if not data: plt.grid()
     ax1.set_aspect('equal', 'box')
     for i, txt in enumerate(hkl_list):
-        plt.annotate(txt, (Qxy_list[i], Qz_list[i]*(1+random()/10)),color=color,fontsize=15, fontweight='bold')
+        #plt.annotate(txt, (Qxy_list[i], Qz_list[i]*(1+random()/10)),color=color,fontsize=15, fontweight='bold')
+        plt.annotate(txt, (Qxy_list[i], Qz_list[i],color=color,fontsize=15, fontweight='bold')
 
     if 0:
         ax2 = fig.add_subplot(122)
@@ -260,7 +261,7 @@ def plot_index(data, Qxy_list, Qz_list, hkl_list, **param_plot):
         if not data: plt.grid()
         ax2.set_aspect('equal', 'box')
         for i, txt in enumerate(hkl_list):
-            plt.annotate(txt, (Qxy_list[i], Qz_list[i]*(1+random()/10)),color=color,fontsize=15, fontweight='bold')
+            plt.annotate(txt, (Qxy_list[i], Qz_list[i],color=color,fontsize=15, fontweight='bold')
 
 
     plt.show()
@@ -431,7 +432,7 @@ def d_rule(lattice, a, h, k, l):
         #print(c)
         return 1/(4/3*(h**2+h*k+k**2)/a**2+(l/c)**2)**0.5
     else:
-        print('WARNING:::Lattice is NOT a correct input')
+        #print('WARNING:::Lattice is NOT a correct input')
         return a
         
 
