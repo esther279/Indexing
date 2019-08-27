@@ -334,6 +334,7 @@ def check_ref(h, k, l, spacegroup):
         
         
     else:
+        print('Space group not yet supported, contact authors!')
         return False
 
 
