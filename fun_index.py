@@ -504,6 +504,57 @@ def load_data(filename, n_svd=0, verbose=0):
     return data
 
 
+#################################
+# Calculate in-plane angle
+#################################
+def d_spacing(h,k,l, lattice ):
+    #should be in gradien
+    [a,b,c,alp,beta,gam] = lattice
+    V=a*b*c*sqrt(1+2*cos(alp)*cos(beta)*cos(gam)-cos(alp)**2-cos(beta)**2-cos(gam)**2)
+
+    #reciprocal lattice
+    ar=b*c*sin(alp)/V
+    br=a*c*sin(beta)/V
+    cr=a*b*sin(gam)/V
+
+    alpr=acos((cos(gam)*cos(beta)-cos(alp))/abs(sin(gam)*sin(beta)))
+    betar=acos((cos(alp)*cos(gam)-cos(beta))/abs(sin(alp)*sin(gam)))
+    gamr=acos((cos(alp)*cos(beta)-cos(gam))/abs(sin(alp)*sin(beta)))
+    print(h, k, l)
+    ss = (h**2*ar**2+k**2*br**2+l**2*cr**2+2*k*l*br*cr*cos(alpr)+2*l*h*cr*ar*cos(betar)+2*h*k*ar*br*cos(gamr))**0.5
+    d=1/ss
+    return d
+
+def angle_interplane(h1,k1,l1, h2, k2, l2, lattice):
+    [a,b,c,alp,beta,gam] = lattice
+    V=a*b*c*sqrt(1+2*cos(alp)*cos(beta)*cos(gam)-cos(alp)**2-cos(beta)**2-cos(gam)**2)
+
+    #reciprocal lattice
+    ar=b*c*sin(alp)/V
+    br=a*c*sin(beta)/V
+    cr=a*b*sin(gam)/V
+
+    alpr=acos((cos(gam)*cos(beta)-cos(alp))/abs(sin(gam)*sin(beta)))
+    betar=acos((cos(alp)*cos(gam)-cos(beta))/abs(sin(alp)*sin(gam)))
+    gamr=acos((cos(alp)*cos(beta)-cos(gam))/abs(sin(alp)*sin(beta)))
+    
+    cosangle = d_spacing(h1,k1,l1,lattice)*d_spacing(h2,k2,l2,lattice)*(h1*h2*ar**2+k1*k2*br**2+l1*l2*cr**2+(k1*l2+k2*l1)*br*cr*cos(alpr)+(h1*l2+h2*l1)*ar*cr*cos(betar)+(h1*k2+h2*k1)*ar*br*cos(gamr))
+    angle_deg = acos(cosangle)/np.pi*180
+    print('{:.3f} deg\n'.format(angle_deg))
+    return angle_deg
+
+
+def QtoTwoTheta(Q=3, wavelength=12.4/13.576):
+    TwoTheta = np.arcsin(Q*wavelength/4/np.pi)*180/np.pi
+    return TwoTheta
+
+def TwoThetatoQ(TwoTheta=33, wavelength=12.4/13.576):
+    Q = 4*np.pi/wavelength*np.sin(np.deg2rad(TwoTheta)/2)
+    return Q
+    
+
+
+
 ############################## Following functions only for testing ####################################
     
 #################################
