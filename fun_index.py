@@ -8,6 +8,7 @@ from random import *
 from scipy import linalg
 import pandas as pds
 import fabio
+from math import *
 
 
 #################################
