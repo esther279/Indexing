@@ -544,9 +544,9 @@ def angle_interplane(h1,k1,l1, h2, k2, l2, lattice):
     return angle_deg
 
 
-def QtoTwoTheta(Q=3, wavelength=12.4/13.576):
-    TwoTheta = np.arcsin(Q*wavelength/4/np.pi)*180/np.pi
-    return TwoTheta
+def QtoTheta(Q=3, wavelength=12.4/13.576):
+    Theta = np.arcsin(Q*wavelength/4/np.pi)*180/np.pi
+    return Theta
 
 def TwoThetatoQ(TwoTheta=33, wavelength=12.4/13.576):
     Q = 4*np.pi/wavelength*np.sin(np.deg2rad(TwoTheta)/2)
