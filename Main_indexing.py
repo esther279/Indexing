@@ -25,6 +25,7 @@ param_beam = {
     "verbose": 1
 }
 param1 = { #CoSi2
+    "name": "CoSi2",
     "a": 5.36,
     "b": 5.36,
     "c": 5.36, 
@@ -41,6 +42,7 @@ param1 = { #CoSi2
 }
 
 param2 = { #CoSi
+    "name": "CoSi",
     "a": 4.433,
     "b": 4.433,
     "c": 4.433, 
@@ -58,6 +60,7 @@ param2 = { #CoSi
 
 
 param3 = { #Co2Si
+    "name": "Co2Si",
     "a": 3.71,
     "b": 4.904,
     "c": 7.066, 
@@ -65,15 +68,16 @@ param3 = { #Co2Si
     "beta_deg": 90,
     "gam_deg": 90, 
     "spacegroup": 62, # 194(HCP), 225(FCC), 229(BCC), 62(pnma) # See fun_index.py -> check_ref(h, k, l, spacegroup)
-    "ori_hkl": [0, 1, 0],  # Beam direction if Transmission, normal to film if GI
-    "range_hkl": [[0, 3], [0, 3], [0, 3]],
+    "ori_hkl": [0, 1, 1],  # Beam direction if Transmission, normal to film if GI
+    "range_hkl": [[-2, 3], [-2, 3], [-2, 3]],
     #"filename": './xray_data/SMI/q_map_SMI_example_waxs.tiff', # SMI (png or tiff); CMS (png or npz)
     #"filename": './xray_data/CMS/Eli_sample_Co_Si_13.5kev_th0.100_x-10.000_15.00s_2666462_waxs.npz',
-    "filename": './xray_data/CMS/Eli_sample_Co_Si_13.5kev_th0.100_x0.000_15.00s_2666482_waxs.npz',
+    "filename": './xray_data/Eli_sample_Co_Si_13.5kev_th0.100_x11.000_15.00s_2666504_waxs.npz',
     #"filename": './xray_data/CMS/Eli_sample_Co_Si_13.5kev_th0.100_x10.000_15.00s_2666502_waxs.npz', 
 }
 
 param4 = { #Co
+    "name": "Co",
     "a": 2.501,
     "b": 2.501,
     "c": 4.033, 
@@ -81,10 +85,10 @@ param4 = { #Co
     "beta_deg": 90,
     "gam_deg": 120, 
     "spacegroup": 194, # 194(HCP), 225(FCC), 229(BCC), 62(pnma) # See fun_index.py -> check_ref(h, k, l, spacegroup)
-    "ori_hkl": [0, 1, 0],  # Beam direction if Transmission, normal to film if GI
-    "range_hkl": [[-1, 3], [-1, 3], [0, 3]],
+    "ori_hkl": [1, 0, 0],  # Beam direction if Transmission, normal to film if GI
+    "range_hkl": [[0, 3], [0, 3], [0, 3]],
     #"filename": './xray_data/SMI/q_map_SMI_example_waxs.tiff', # SMI (png or tiff); CMS (png or npz)
-    "filename": './xray_data/CMS/Eli_sample_Co_Si_13.5kev_th0.100_x-10.000_15.00s_2666462_waxs.npz',
+    "filename": './xray_data/Eli_sample_Co_Si_13.5kev_th0.100_x11.000_15.00s_2666504_waxs.npz',
     #"filename": './xray_data/CMS/Eli_sample_Co_Si_13.5kev_th0.100_x0.000_15.00s_2666482_waxs.npz',
     #"filename": './xray_data/CMS/Eli_sample_Co_Si_13.5kev_th0.100_x10.000_15.00s_2666502_waxs.npz', 
 }
@@ -92,6 +96,7 @@ param4 = { #Co
 ######
 
 param10 = { #PtSi
+    "name": "PtSi",
     "a": 3.638,
     "b": 5.667,
     "c": 5.982, 
@@ -103,11 +108,12 @@ param10 = { #PtSi
     "range_hkl": [[-1, 3], [-1, 3], [0, 3]],
     #"filename": './xray_data/SMI/q_map_SMI_example_waxs.tiff', # SMI (png or tiff); CMS (png or npz)
     #"filename": './xray_data/CMS/Eli_sample_Co_Si_13.5kev_th0.100_x-10.000_15.00s_2666462_waxs.npz',
-    "filename": './xray_data/CMS/Eli_sample_Co_Si_13.5kev_th0.100_x0.000_15.00s_2666482_waxs.npz',
+    "filename": './xray_data/Eli_sample_Co_Si_13.5kev_th0.100_x11.000_15.00s_2666504_waxs.npz',
     #"filename": './xray_data/CMS/Eli_sample_Co_Si_13.5kev_th0.100_x10.000_15.00s_2666502_waxs.npz', 
 }
 
 param11 = { #Pt2Si
+    "name": "Pt2Si",
     "a": 3.983,
     "b": 3.983,
     "c": 4.111, 
@@ -119,12 +125,12 @@ param11 = { #Pt2Si
     "range_hkl": [[-1, 3], [-1, 3], [0, 3]],
     #"filename": './xray_data/SMI/q_map_SMI_example_waxs.tiff', # SMI (png or tiff); CMS (png or npz)
     #"filename": './xray_data/CMS/Eli_sample_Co_Si_13.5kev_th0.100_x-10.000_15.00s_2666462_waxs.npz',
-    "filename": './xray_data/CMS/Eli_sample_Co_Si_13.5kev_th0.100_x0.000_15.00s_2666482_waxs.npz',
+    "filename": './xray_data/Eli_sample_Co_Si_13.5kev_th0.100_x11.000_15.00s_2666504_waxs.npz',
     #"filename": './xray_data/CMS/Eli_sample_Co_Si_13.5kev_th0.100_x10.000_15.00s_2666502_waxs.npz', 
 }
 
 
-param = param4
+param = param11
 data = []   
 get_hint(param['spacegroup'])
 
@@ -155,12 +161,14 @@ param_plot = {
     "log10": 0,
     "lim1": [-0.5, 3.5],  # axis limits
     "vmin": -5,  # colorbar range
-    "vmax": 200,
+    "vmax": 400,
     "textcolor": 'c',
 }
 plt.figure(10, figsize=(12,10)); plt.clf()
 plot_index(data, Qxy_list, Qz_list, hkl_list, **param_plot) 
-plt.title(param['filename'])
+plt.title("{}: a{},b{},c{},alpha{},beta{},gam{},spacegroup{}\n orientation {}\n{}".format(
+          param['name'],param['a'],param['b'],param['c'],param['alp_deg'],param['beta_deg'],
+          param['gam_deg'],param['spacegroup'],param["ori_hkl"],param['filename']), size=15,fontweight='bold')
 
 
 ## List peaks (d = 2pi/q)

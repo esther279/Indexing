@@ -248,7 +248,7 @@ def plot_index(data, Qxy_list, Qz_list, hkl_list, **param_plot):
     ax1.set_aspect('equal', 'box')
     for i, txt in enumerate(hkl_list):
         #plt.annotate(txt, (Qxy_list[i], Qz_list[i]*(1+random()/5)),color=color,fontsize=15, fontweight='bold')
-        plt.annotate(txt, (Qxy_list[i], Qz_list[i]+0.02*i) ,color=color,fontsize=15, fontweight='bold')
+        plt.annotate(txt, (Qxy_list[i], Qz_list[i]+0.005*i) ,color=color,fontsize=15, fontweight='bold')
 
     if 0:
         ax2 = fig.add_subplot(122)
@@ -287,12 +287,30 @@ def check_ref(h, k, l, spacegroup):
             return True
         if (k+h)%2 ==0:
             return True
+
+    elif spacegroup == 139: 
+        if (h+k+l)%2==0:
+            return True
+        elif (h+k)%2==0 and l==0:
+            return True
+        elif (k+l)%2==0 and h==0:
+            return True        
+        elif h==k and l%2==0:
+            return True    
+        elif h==0 and k==0 and l%2==0:
+            return True    
+        elif h%2==0 and k==0 and l==0:
+            return True    
         
     elif spacegroup == 194 or spacegroup=='HCP': 
         if h==k and l%2==0:
             return True
         if l%2==0 or (h-k-1)%3==0 or (h-k-2)%3==0:
             return True        
+
+    elif spacegroup == 198 or spacegroup=='P213': #P213 
+        if h%2==0 and k==0 and l==0:
+            return True
         
     elif spacegroup == 225 or spacegroup=='FCC': 
        
@@ -313,12 +331,12 @@ def check_ref(h, k, l, spacegroup):
         if h==k and k==l and k%2==0: # and l%2==0:
                 return True
             
-    elif spacegroup == 62: #pnma  http://www.cryst.ehu.es/cgi-bin/cryst/programs/nph-hkl?gnum=62
+    elif spacegroup == 62 or spacegroup=='pnma': #pnma  http://www.cryst.ehu.es/cgi-bin/cryst/programs/nph-hkl?gnum=62
         
         #for Kaichen's case, k and l has to be exchanged. Pnma to Pnam
-        tt=k
-        k=l
-        l=tt
+        #tt=k
+        #k=l
+        #l=tt
         
         if h==0:
             if k*l !=0:
@@ -329,7 +347,7 @@ def check_ref(h, k, l, spacegroup):
         if l==0:
             if h%2==0:
                 return True
-        if h!=0 and k==0 and l!=0:
+        if h!=0 and k!=0 and l!=0:
             if (h+l)%2==0 and k%2==0:
                 return True
         
