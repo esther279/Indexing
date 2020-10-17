@@ -269,6 +269,7 @@ def plot_index(data, Qxy_list, Qz_list, hkl_list, **param_plot):
     
 #################################
 # See: http://www.cryst.ehu.es/cgi-bin/cryst/programs/nph-hkl?gnum=225
+# https://www.cryst.ehu.es/cgi-bin/cryst/programs/nph-table
 #
 # TO-DO: combine this with function index_rule
 #################################
@@ -310,6 +311,10 @@ def check_ref(h, k, l, spacegroup):
 
     elif spacegroup == 198 or spacegroup=='P213': #P213 
         if h%2==0 and k==0 and l==0:
+            return True
+
+    elif spacegroup == 4 or spacegroup=='P21': 
+        if h==0 and k%2==0 and l==0:
             return True
         
     elif spacegroup == 225 or spacegroup=='FCC': 
@@ -354,7 +359,7 @@ def check_ref(h, k, l, spacegroup):
         
     else:
         print('Space group not yet supported, contact authors!')
-        return False
+        return True
 
 
 #################################
@@ -477,11 +482,12 @@ def load_data(filename, n_svd=0, verbose=0):
         img = np.flip(temp.data,axis=0)
         fn_q = filename.replace('q_map', 'qpar')
         fn_q = fn_q.replace('.tiff','.txt')
+        fn_q = fn_q.replace('/qr/','/txt/')
         temp = open(fn_q,'r').read().splitlines()
-        x_axis = np.asarray(temp, dtype='float64')*10.0
+        x_axis = np.asarray(temp, dtype='float64') #*10.0
         fn_q = fn_q.replace('qpar', 'qver')
         temp = open(fn_q,'r').read().splitlines()
-        y_axis = np.asarray(temp, dtype='float64')*10.0
+        y_axis = np.asarray(temp, dtype='float64') #*10.0
         data = {  
             "img": img,
             "x_axis": x_axis,
