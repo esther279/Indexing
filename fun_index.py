@@ -9,6 +9,7 @@ from scipy import linalg
 import pandas as pds
 import fabio
 from math import *
+import scipy.signal
 
 
 #################################
@@ -248,7 +249,7 @@ def plot_index(data, Qxy_list, Qz_list, hkl_list, **param_plot):
     ax1.set_aspect('equal', 'box')
     for i, txt in enumerate(hkl_list):
         #plt.annotate(txt, (Qxy_list[i], Qz_list[i]*(1+random()/5)),color=color,fontsize=15, fontweight='bold')
-        plt.annotate(txt, (Qxy_list[i], Qz_list[i]+0.005*i) ,color=color,fontsize=15, fontweight='bold')
+        plt.annotate(txt, (Qxy_list[i], Qz_list[i]+0.005*0) ,color=color,fontsize=12, fontweight='bold')
 
     if 0:
         ax2 = fig.add_subplot(122)
@@ -278,16 +279,19 @@ def check_ref(h, k, l, spacegroup):
         if h!=0 and k==0 and l!=0:
             if l%2 ==0:
                 return True
-        if h==0 and k!=0 and l==0:        
+        elif h==0 and k!=0 and l==0:        
             if k%2 ==0:
                 return True
-        if h==0 and k==0 and l!=0:        
+        elif h==0 and k==0 and l!=0:        
             if l%2 ==0:
                 return True
-        if (k+l)%2 ==0:
+        else:
             return True
-        if (k+h)%2 ==0:
-            return True
+        #if (k+l)%2 ==0:
+        #    return True
+        #if (k+h)%2 ==0:
+        #    return True
+        
 
     elif spacegroup == 139: 
         if (h+k+l)%2==0:
@@ -314,8 +318,12 @@ def check_ref(h, k, l, spacegroup):
             return True
 
     elif spacegroup == 4 or spacegroup=='P21': 
-        if h==0 and k%2==0 and l==0:
+        if h==0 and k!=0 and l==0:
+            if k%2==0:
+                return True
+        else:
             return True
+                
         
     elif spacegroup == 225 or spacegroup=='FCC': 
        
