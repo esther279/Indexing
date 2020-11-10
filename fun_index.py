@@ -248,8 +248,8 @@ def plot_index(data, Qxy_list, Qz_list, hkl_list, **param_plot):
     if not data: plt.grid()
     ax1.set_aspect('equal', 'box')
     for i, txt in enumerate(hkl_list):
-        #plt.annotate(txt, (Qxy_list[i], Qz_list[i]*(1+random()/5)),color=color,fontsize=15, fontweight='bold')
-        plt.annotate(txt, (Qxy_list[i], Qz_list[i]+0.005*0) ,color=color,fontsize=12, fontweight='bold')
+        plt.annotate(txt, (Qxy_list[i], Qz_list[i]*(1+random()/5)),color=color,fontsize=15, fontweight='bold')
+        #plt.annotate(txt, (Qxy_list[i], Qz_list[i]+0.005*0) ,color=color,fontsize=12, fontweight='bold')
 
     if 0:
         ax2 = fig.add_subplot(122)
@@ -558,6 +558,12 @@ def d_spacing(h,k,l, lattice ):
     d=1/ss
     return d
 
+################################
+# Calc angle between planes
+#
+# lattice=(5.83, 7.88, 29.18, 90/180*pi, 99.4/180*pi, 90/180*pi)
+# angle_interplane(0,0,1,1,1,0,lattice)
+##########################
 def angle_interplane(h1,k1,l1, h2, k2, l2, lattice):
     [a,b,c,alp,beta,gam] = lattice
     V=a*b*c*sqrt(1+2*cos(alp)*cos(beta)*cos(gam)-cos(alp)**2-cos(beta)**2-cos(gam)**2)
