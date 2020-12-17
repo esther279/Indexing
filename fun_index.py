@@ -540,7 +540,7 @@ def load_data(filename, n_svd=0, verbose=0):
 #################################
 # Calculate in-plane angle
 #################################
-def d_spacing(h,k,l, lattice ):
+def d_spacing(h,k,l, lattice, verbose=0):
     #should be in gradien
     [a,b,c,alp,beta,gam] = lattice
     V=a*b*c*sqrt(1+2*cos(alp)*cos(beta)*cos(gam)-cos(alp)**2-cos(beta)**2-cos(gam)**2)
@@ -553,7 +553,8 @@ def d_spacing(h,k,l, lattice ):
     alpr=acos((cos(gam)*cos(beta)-cos(alp))/abs(sin(gam)*sin(beta)))
     betar=acos((cos(alp)*cos(gam)-cos(beta))/abs(sin(alp)*sin(gam)))
     gamr=acos((cos(alp)*cos(beta)-cos(gam))/abs(sin(alp)*sin(beta)))
-    print(h, k, l)
+    if verbose>0:
+        print(h, k, l)
     ss = (h**2*ar**2+k**2*br**2+l**2*cr**2+2*k*l*br*cr*cos(alpr)+2*l*h*cr*ar*cos(betar)+2*h*k*ar*br*cos(gamr))**0.5
     d=1/ss
     return d
@@ -564,7 +565,7 @@ def d_spacing(h,k,l, lattice ):
 # lattice=(5.83, 7.88, 29.18, 90/180*pi, 99.4/180*pi, 90/180*pi)
 # angle_interplane(0,0,1,1,1,0,lattice)
 ##########################
-def angle_interplane(h1,k1,l1, h2, k2, l2, lattice):
+def angle_interplane(h1,k1,l1, h2, k2, l2, lattice, verbose=0):
     [a,b,c,alp,beta,gam] = lattice
     V=a*b*c*sqrt(1+2*cos(alp)*cos(beta)*cos(gam)-cos(alp)**2-cos(beta)**2-cos(gam)**2)
 
@@ -577,9 +578,10 @@ def angle_interplane(h1,k1,l1, h2, k2, l2, lattice):
     betar=acos((cos(alp)*cos(gam)-cos(beta))/abs(sin(alp)*sin(gam)))
     gamr=acos((cos(alp)*cos(beta)-cos(gam))/abs(sin(alp)*sin(beta)))
     
-    cosangle = d_spacing(h1,k1,l1,lattice)*d_spacing(h2,k2,l2,lattice)*(h1*h2*ar**2+k1*k2*br**2+l1*l2*cr**2+(k1*l2+k2*l1)*br*cr*cos(alpr)+(h1*l2+h2*l1)*ar*cr*cos(betar)+(h1*k2+h2*k1)*ar*br*cos(gamr))
+    cosangle = d_spacing(h1,k1,l1,lattice,verbose=verbose)*d_spacing(h2,k2,l2,lattice,verbose=verbose)*(h1*h2*ar**2+k1*k2*br**2+l1*l2*cr**2+(k1*l2+k2*l1)*br*cr*cos(alpr)+(h1*l2+h2*l1)*ar*cr*cos(betar)+(h1*k2+h2*k1)*ar*br*cos(gamr))
     angle_deg = acos(cosangle)/np.pi*180
-    print('{:.3f} deg\n'.format(angle_deg))
+    if verbose>0:
+        print('{:.3f} deg\n'.format(angle_deg))
     return angle_deg
 
 
