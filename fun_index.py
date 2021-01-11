@@ -133,7 +133,7 @@ def get_index(a=10,b=10,c=10,alp_deg=90,beta_deg=90,gam_deg=90,**kwargs):
     for h in range(range_hkl[0][0], range_hkl[0][1]+1):
         for k in range(range_hkl[1][0], range_hkl[1][1]+1):
             for l in range(range_hkl[2][0], range_hkl[2][1]+1):
-                if GI == 1:
+                if GI == 1 and h+l<12:
                     temp = 1 
                 else:
                     temp = (np.sum(np.array([h,k,l])*np.array(ori_hkl))==0)
@@ -210,6 +210,9 @@ def plot_index(data, Qxy_list, Qz_list, hkl_list, **param_plot):
             img_use = data['img_use']
             flag = data['plot_img_use']
             
+    if 'cmap' in param_plot: cmap=param_plot['cmap']
+    else: cmap='plasma'
+
     if 'log10' in param_plot and param_plot['log10']: log10=1
     else: log10=0
     
@@ -222,6 +225,12 @@ def plot_index(data, Qxy_list, Qz_list, hkl_list, **param_plot):
         color = param_plot['textcolor']
     else:
         color = 'w'
+    
+    if 'FS' in param_plot:
+        FS = param_plot['FS']
+    else:
+        FS = 12
+    
     
     fig = plt.gcf()
     #fig.suptitle('GID in q-space', fontsize=15, fontweight='bold')
@@ -238,18 +247,18 @@ def plot_index(data, Qxy_list, Qz_list, hkl_list, **param_plot):
         if 'vmax' in param_plot: vmax = param_plot['vmax']
         else: vmax = np.max(img_plot)*0.98
     
-        plt.pcolormesh(X,Y,(img_plot), vmin=vmin, vmax=vmax, cmap=mpl.cm.plasma, alpha = 1); plt.colorbar()
+        plt.pcolormesh(X,Y,(img_plot), vmin=vmin, vmax=vmax, cmap=cmap, alpha = 1); plt.colorbar()
         
-    plt.plot(Qxy_list, Qz_list,'ro',markeredgecolor='r',markersize=6)
+    plt.plot(Qxy_list, Qz_list,'cx',markeredgecolor='c',markersize=6)
     plt.xlim(lim1[0], lim1[1])
-    plt.ylim(lim1[0], lim1[1])
+    plt.ylim(lim2[0], lim2[1])
     plt.xlabel('q',fontsize=15, fontweight='bold')
     
     if not data: plt.grid()
     ax1.set_aspect('equal', 'box')
     for i, txt in enumerate(hkl_list):
-        plt.annotate(txt, (Qxy_list[i], Qz_list[i]*(1+random()/5)),color=color,fontsize=15, fontweight='bold')
-        #plt.annotate(txt, (Qxy_list[i], Qz_list[i]+0.005*0) ,color=color,fontsize=12, fontweight='bold')
+        #plt.annotate(txt, (Qxy_list[i], Qz_list[i]*(1+random()/6)),color=color,fontsize=FS, fontweight='bold')
+        plt.annotate(txt, (Qxy_list[i]+0.005*2, Qz_list[i]+0.005*2) ,color=color,fontsize=FS, fontweight='bold')
 
     if 0:
         ax2 = fig.add_subplot(122)
@@ -257,13 +266,13 @@ def plot_index(data, Qxy_list, Qz_list, hkl_list, **param_plot):
             if flag: img_plot = img_use
             else: img_plot = img
             plt.pcolormesh(X,Y,np.log10(img_plot), vmin=vmin, vmax=vmax, cmap=mpl.cm.plasma, alpha = 1); plt.colorbar()
-        plt.plot(Qxy_list,Qz_list,'ro',markeredgecolor='r',markersize=4)
-        plt.xlim(lim2[0], lim2[1])
+        plt.plot(Qxy_list,Qz_list,'ro',markeredgecolor='r',markersize=3)
+        plt.xlim(lim1[0], lim1[1])
         plt.ylim(lim2[0], lim2[1])
         if not data: plt.grid()
         ax2.set_aspect('equal', 'box')
         for i, txt in enumerate(hkl_list):
-            plt.annotate(txt, (Qxy_list[i], Qz_list[i]) ,color=color,fontsize=15, fontweight='bold')
+            plt.annotate(txt, (Qxy_list[i], Qz_list[i]) ,color=color,fontsize=FS, fontweight='bold')
 
 
     plt.show()
@@ -279,18 +288,16 @@ def check_ref(h, k, l, spacegroup):
         if h!=0 and k==0 and l!=0:
             if l%2 ==0:
                 return True
-        elif h==0 and k!=0 and l==0:        
+        if h==0 and k!=0 and l==0:        
             if k%2 ==0:
                 return True
-        elif h==0 and k==0 and l!=0:        
+        if h==0 and k==0 and l!=0:        
             if l%2 ==0:
                 return True
-        else:
+        if (k+l)%2 ==0:
             return True
-        #if (k+l)%2 ==0:
-        #    return True
-        #if (k+h)%2 ==0:
-        #    return True
+        if (k+h)%2 ==0:
+            return True
         
 
     elif spacegroup == 139: 

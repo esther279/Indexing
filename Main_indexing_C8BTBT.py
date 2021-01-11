@@ -28,7 +28,22 @@ param_beam = {
 '''
 C8BTBT P21/c
 '''
-param1 = { #CoSi2
+param1 = { 
+    "name": "C8BTBT",
+    "a": 5.93,
+    "b": 7.88,
+    "c": 29.18, 
+    "alp_deg": 90,
+    "beta_deg": 92.4,
+    "gam_deg": 90, 
+    "spacegroup": 14, # 194(HCP), 225(FCC), 229(BCC), 62(pnma) # See fun_index.py -> check_ref(h, k, l, spacegroup)
+    "ori_hkl": [0, 0, 1],  # Beam direction if Transmission, normal to film if GI
+    "range_hkl": [[0, 3], [-1, 3], [0, 9]],
+    "filename": '/home/etsai/BNL/Research/GIWAXS_tomo_2019C2/BTBT_TOMO_test3_25_average/BTBT_TOMO_test3_25_average.npz', 
+}
+
+
+param2 = { 
     "name": "C8BTBT",
     "a": 5.83,
     "b": 7.88,
@@ -38,7 +53,24 @@ param1 = { #CoSi2
     "gam_deg": 90, 
     "spacegroup": 14, # 194(HCP), 225(FCC), 229(BCC), 62(pnma) # See fun_index.py -> check_ref(h, k, l, spacegroup)
     "ori_hkl": [0, 0, 1],  # Beam direction if Transmission, normal to film if GI
-    "range_hkl": [[-1, 3], [-1, 3], [-1, 3]],
+    #"range_hkl": [[-1, 3], [-1, 3], [-1, 3]],
+    "range_hkl": [[-2, 3], [0, 3], [0, 11]],
+    "filename": '/home/etsai/BNL/Research/GIWAXS_tomo_2019C2/BTBT_TOMO_test3_25_average/BTBT_TOMO_test3_25_average.npz',
+    #"filename": '/home/etsai/BNL/Users/SMI/ABraunschweig/2020C1/306008_analysis/Results/AB2/qr/q_map_waxs_AB2_1_4_MeDPP_glass_thermal_5minVSADCM_0.0800deg_x9350_.tiff'
+}
+
+param0 = { 
+    "name": "C8-C12-BTBT",
+    "a": 5.86,
+    "b": 7.72,
+    "c": 33.7, 
+    "alp_deg": 90,
+    "beta_deg": 93.2,
+    "gam_deg": 90, 
+    "spacegroup": 14, # 194(HCP), 225(FCC), 229(BCC), 62(pnma) # See fun_index.py -> check_ref(h, k, l, spacegroup)
+    "ori_hkl": [0, 0, 1],  # Beam direction if Transmission, normal to film if GI
+    #"range_hkl": [[-1, 3], [-1, 3], [-1, 3]],
+    "range_hkl": [[-2, 3], [0, 3], [0, 11]],
     "filename": '/home/etsai/BNL/Research/GIWAXS_tomo_2019C2/BTBT_TOMO_test3_25_average/BTBT_TOMO_test3_25_average.npz',
     #"filename": '/home/etsai/BNL/Users/SMI/ABraunschweig/2020C1/306008_analysis/Results/AB2/qr/q_map_waxs_AB2_1_4_MeDPP_glass_thermal_5minVSADCM_0.0800deg_x9350_.tiff'
 }
@@ -47,9 +79,9 @@ param1 = { #CoSi2
 # to-do: vesta intensity? search through hkl
 ######
 
-param = param1
+param = param0
 data = []   
-get_hint(param['spacegroup'])
+#get_hint(param['spacegroup'])
 
 ## Index
 hkl_list, Qxy_list, Qz_list, q_data = get_index(**param,**param_beam)
@@ -79,15 +111,21 @@ if 'filename' in param:
 param_plot = {
     "log10": 0,
     "lim1": [-2, 3.2],  # axis limits
-    "vmin": -2,  # colorbar range
-    "vmax": 30,
-    "textcolor": 'c',
+    "lim2": [-0.5, 3],  # axis limits
+    "vmin": 0,  # colorbar range
+    "vmax": 35,
+    "textcolor": 'w',
+    "cmap": 'magma', #'jet',
+    "FS": 9
 }
 plt.figure(10, figsize=(12,10)); plt.clf()
 plot_index(data, Qxy_list, Qz_list, hkl_list, **param_plot) 
 plt.title("{}: a{},b{},c{},alpha{},beta{},gam{},spacegroup{}\n orientation {}\n{}".format(
           param['name'],param['a'],param['b'],param['c'],param['alp_deg'],param['beta_deg'],
           param['gam_deg'],param['spacegroup'],param["ori_hkl"],param['filename'][-100:-1]), size=10,fontweight='bold')
+
+
+
 
 ### Calculate angle 
 def calc_rot(thx, thz):
