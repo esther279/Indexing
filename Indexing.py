@@ -21,8 +21,8 @@ import os, glob
 from math import sin, cos, radians, pi, sqrt
 import numpy as np
 import pylab as plt
-
 import matplotlib as mpl
+from skimage import color
 
 SciAnalysis_PATH='/nsls2/xf11bm/software/SciAnalysis/'
 SciAnalysis_PATH = '/home/etsai/BNL/Users/software/SciAnalysis/'
@@ -32,8 +32,21 @@ from SciAnalysis import tools
 from SciAnalysis.XSAnalysis.Data import *
 from SciAnalysis.XSAnalysis import Protocols
 
-
-
+# =============================================================================
+# Functions
+# =============================================================================
+def plot_box(center, size, color='r'):
+    x_start = center[0] - (size[0]/2)
+    x_end = center[0] + (size[0]/2)
+    y_start = center[1] - (size[1]/2)
+    y_end = center[1] + (size[1]/2)
+    plt.plot([y_start, y_end], [x_start, x_start], color=color)
+    plt.plot([y_start, y_end], [x_end, x_end], color=color)
+    plt.plot([y_start, y_start], [x_start, x_end], color=color)
+    plt.plot([y_end, y_end], [x_start, x_end], color=color)
+    
+    
+    
 # Fitter    
 ###################################################################    
 class Fitter(object):
@@ -2140,8 +2153,7 @@ class UnitCell(object):
         fout.close()
 
  
-    def plot_ewald_two_beam_qxqz(self, ewaldsphere, Material_ambient, Material_film, Material_substrate, filename='output.png', plot_region=[None, None, None, None], plot_buffers=[0.16, 0.035, 0.16, 0.03], label_peaks=False, blanked_figure=False, peaks_present=None, max_hkl=10, thresh=0.01, dpi=100):
-        
+    def plot_ewald_two_beam_qxqz(self, ewaldsphere, Material_ambient, Material_film, Material_substrate, filename='output.png', plot_region=[None, None, None, None], plot_buffers=[0.16, 0.035, 0.16, 0.03], label_peaks=False, blanked_figure=False, peaks_present=None, max_hkl=10, thresh=0.01, dpi=100, plot_clear=False, data=None):
         
         # Prepare for refraction correction computations
         k_xray =e.get_k() 
@@ -2154,29 +2166,25 @@ class UnitCell(object):
         substrate_crit_rad = np.radians( Material_substrate.get_xray_critical_angle(energy=e.get_beam_energy()) )
 
         alpha_incident_rad = np.radians(e.get_theta_incident())
-        alpha_incident_effective_rad = np.arccos( cos(alpha_incident_rad)*ambient_n/film_n ) # Snell's law (cosine form)
-            
+        alpha_incident_effective_rad = np.arccos( cos(alpha_incident_rad)*ambient_n/film_n ) # Snell's law (cosine form)            
 
         # Plot styling
         plt.rcParams['font.family'] = 'sans-serif'
         plt.rcParams['axes.labelsize'] = 30
         plt.rcParams['xtick.labelsize'] = 'xx-large'
         plt.rcParams['ytick.labelsize'] = 'xx-large'
-
         #plt.rcParams['axes.labelsize'] = 35
         #plt.rcParams['xtick.labelsize'] = 28
         #plt.rcParams['ytick.labelsize'] = 28
 
-
-        fig = plt.figure(figsize=(10,10))
+        fig = plt.figure(num=11, figsize=(10,10)); plt.clf()
         #fig.subplots_adjust(left=0.17, bottom=0.15, right=0.97, top=0.94, wspace=0.2, hspace=0.2)
         #ax = plt.subplot(111)
         left_buf, right_buf, bottom_buf, top_buf = plot_buffers
         fig_width = 1.0-right_buf-left_buf
         fig_height = 1.0-top_buf-bottom_buf
         ax = fig.add_axes( [left_buf, bottom_buf, fig_width, fig_height], aspect='equal' )
-
-        
+    
 
         # BA term
         peaks_x = []
@@ -2231,6 +2239,7 @@ class UnitCell(object):
                         # Scattered ray refracts as it exits
                         scattered_incident_angle_rad = two_theta_B_rad - alpha_incident_effective_rad
                         scattered_exit_angle_rad = np.arccos( cos(scattered_incident_angle_rad)*film_n/ambient_n ) # Snell's law (cosine form)
+                        #print("scattered_exit_angle_rad = {}".format(scattered_exit_angle_rad))
                         
                         if (scattered_incident_angle_rad) > 0:
                             # GISAXS (scattering above horizon)
@@ -2301,10 +2310,8 @@ class UnitCell(object):
                                                     )
                                                 )
                                 qz_shift = qz-qz_in_film
-                                qz += qz_shift
-                                
+                                qz += qz_shift                              
 
-                            
                         
                         if np.isnan(qz):
                             pass
@@ -2342,6 +2349,7 @@ class UnitCell(object):
 
                         # Scattering event occurs inside film, with angle 2theta_B
                         two_theta_B_rad = 2.0*np.arcsin(qz/(2.0*k_xray))
+                        #print("two_theta_B_rad = {}".format(qz/(2.0*k_xray)))
                         
                         
                         # Scattered ray refracts as it exits
@@ -2407,20 +2415,32 @@ class UnitCell(object):
                                 namesTR.append( s )
                         
 
-        #print(peaks_x, peaks_y)
-        plt.scatter( peaks_x, peaks_y, s=100, marker='x', facecolor=(0,1,0), linewidth=2 )
-        plt.scatter( peaksTR_x, peaksTR_y, s=100, facecolor='none', edgecolor=(1,1,0), linewidth=2 )
+        pixel_size = (plot_region[1]-plot_region[0]) / data.shape[0]
+        data_gray = color.rgb2gray(data)
+        peak_sum = 0; w = 30
+        print('pixel_size = {}, w = {}'.format(pixel_size, w))
+        for ii, peak in enumerate(peaks_x):
+            x_pixel = int((peaks_x[ii]-plot_region[0])/pixel_size)
+            y_pixel = int((peaks_y[ii]-plot_region[2])/pixel_size)
+            peak_sum = peak_sum + np.sum(data_gray[y_pixel-w:y_pixel+w+1, x_pixel-w:x_pixel+w+1])
+        for ii, peak in enumerate(peaksTR_x):
+            x_pixel = int((peaksTR_x[ii]-plot_region[0])/pixel_size)
+            y_pixel = int((peaksTR_y[ii]-plot_region[2])/pixel_size)
+            peak_sum = peak_sum + np.sum(data_gray[y_pixel-w:y_pixel+w+1, x_pixel-w:x_pixel+w+1])
+            
+        plt.scatter( peaks_x, peaks_y, s=50, marker='x', facecolor=(0,1,0), linewidth=2 )
+        plt.scatter( peaksTR_x, peaksTR_y, s=50, facecolor='none', edgecolor=(1,1,0), linewidth=2 )
         if label_peaks:
             for x, y, s in zip( peaks_x, peaks_y, names ):
                 if blanked_figure:
                     plt.text( x, y, s, size=12, color='1.0', horizontalalignment='left', verticalalignment='bottom' )
                 else:
                     plt.text( x, y, s, size=12, color='0.0', horizontalalignment='left', verticalalignment='bottom' )
-            for x, y, s in zip( peaksTR_x, peaksTR_y, namesTR ):
-                if blanked_figure:
-                    plt.text( x, y, s, size=12, color='1.0', horizontalalignment='left', verticalalignment='top' )
-                else:
-                    plt.text( x, y, s, size=12, color='0.0', horizontalalignment='left', verticalalignment='top' )
+            #for x, y, s in zip( peaksTR_x, peaksTR_y, namesTR ):
+            #    if blanked_figure:
+            #        plt.text( x, y, s, size=12, color='1.0', horizontalalignment='left', verticalalignment='top' )
+            #    else:
+            #        plt.text( x, y, s, size=12, color='0.0', horizontalalignment='left', verticalalignment='top' )
                 
                 
         if 1:
@@ -2482,11 +2502,19 @@ class UnitCell(object):
             plt.xlabel( r'$q_{xy} \, (\mathrm{\AA^{-1}})$', size=30 )
             plt.ylabel( r'$q_{z} \, (\mathrm{\AA^{-1}})$', size=30  )
             
+        plt.text(xf*0.6,yi*0.95,'sum {:.1f}'.format(peak_sum),color='w')
+        plt.savefig( filename, transparent=blanked_figure, dpi=dpi ) 
         
-        plt.savefig( filename, transparent=blanked_figure, dpi=dpi )        
-        plt.close()
+        if data is not None:
+            plt.imshow(data, alpha=0.8, extent=plot_region)   
         
+        print('peak_sum = {}\n'.format(peak_sum))
+        plot_box([peaks_y[0], peaks_x[0]], w*2*pixel_size*np.asarray([1,1]), color='r')
         
+        if plot_clear==True:
+            plt.close()
+        
+        return peak_sum
         
     # END OF: class UnitCell(object)
     ############################################
@@ -3522,22 +3550,18 @@ if False:
     
 if True:
     # Example: Plot GISAXS/GTSAXS peaks (two-beam approximation)
-    
-    
+       
 
     # Strongest peaks
     peaks_present = None
-    peaks_present = [ [1,0,0], [2,0,0], [3,0,0], [4,0,0] ] # Lamellae
-    
-    
-    
+    #peaks_present = [ [1,0,0], [2,0,0], [3,0,0], [4,0,0] ] # Lamellae   
+
     # Ia3d cubic gyroid
     #peaks_present = [ [2,1,1], [2,2,0], [3,2,1], [4,0,0], [4,2,0], [3,3,2], [4,2,2], [4,3,1] ] 
     
-    
     #peaks_present = [ [-1,1,0], [0,1,-1], [1,0,-1], [1, -1,0], [-1,2,-1]] 
     
-    if True:
+    if 0:
         # Permute ordering
         peaks_present_base = peaks_present
         peaks_present = []
@@ -3551,7 +3575,7 @@ if True:
             peaks_present.append([c,b,a])
 
     
-    if True:
+    if 0:
         # Permute signs
         peaks_present_base = peaks_present
         peaks_present = []
@@ -3573,148 +3597,90 @@ if True:
         #h, k, l = peak
         #peaks_present_abs.append( [abs(h), abs(k), abs(l)] )
     
-    theta_error = 0.035
+    theta_error = 0.035 # KY
+    theta_error = 0.0 
     theta_target = 0.15
     e = EwaldSphere( wavelength=0.9184, theta_incident=theta_target+theta_error ) # 13.5 keV
 
-    #plot_region = [-0.25, 0.02, 0.0, 0.30]
-    #plot_buffers = [0.30,0.05,0.25,0.05]
-    #plot_region = [-0.3, 0.3, 0, 0.4] # KY
-    #plot_buffers = [0.20, 0.02,0.25,0.05] # KY
 
     plot_region = [-0.3, 0.3, -0.2, 0.4] 
-    plot_buffers = [0,0,0,0] #[0.30, 0.05, 0.25, 0.05]
-    
-    dpi = 200
-    
+    plot_buffers = [0,0,0,0] #[0.30, 0.05, 0.25, 0.05]    
+    dpi = 200    
     
     # unit cell
     ###################################################################    
     print( '\n\nUnit Cell ----------------------------------------' )
     
-    # Hex
-    if 1:
-        cyl_repeat_nm = 5.45
-        cyl_repeat_A = cyl_repeat_nm*10.0
-        Cell = UnitCell( cyl_repeat_A, cyl_repeat_A, 0.01, 90.0, 90.0, 120.0 )
-    
-    else:
-        cyl_repeat_nm = 7.7
-        cyl_repeat_A = cyl_repeat_nm*10.0
-        
-        Cell = UnitCell( cyl_repeat_A, cyl_repeat_A, cyl_repeat_A, 90.0, 90.0, 90.0 )
-        
-    #Cell.set_rotation_angles(eta=0.0, phi=0.0, theta=0.0) # Reset orientation
-    
-    #  a-axis is in x,y plane
-    #  b-axis points along +y
-    #  c-axis points along +z
+    if 1: 
+        a_nm = 11.9
+        b_nm = 8.9
+        alpha = 90
+        beta =  90
+        gamma = 116
+        a_A = a_nm*10.0
+        b_A = b_nm*10.0
+        Cell = UnitCell( a_A, b_A, 0.01, alpha, beta, gamma)
 
+    rotate_x_deg = -90 # 90
+    rotate_y_deg = 0   # 90+30
+    rotate_z_deg = 0   # 0
+    Cell.apply_rotation_x(rotate_x_deg)
+    Cell.apply_rotation_y(rotate_y_deg)
+    Cell.apply_rotation_z(rotate_z_deg)       
+    note = "a_nm {}, b_nm {}, gamma_deg {}\n rotate x {}, y {}, z {} degree".format(a_nm, b_nm, gamma, rotate_x_deg, rotate_y_deg, rotate_z_deg)
+    print(note)
 
-    #Cell.apply_rotation_x( -90.0 )
-    # Now:
-    #  a-axis in x,z plane
-    #  b-axis along z
-    #  c-axis points along -y    
-
-    # 111 vertical
-    #Cell.apply_rotation_z(-45)
-    #Cell.apply_rotation_y(-54.736)
+    #h, k, l = 0, 0, 1    
+    #qhkl, (qx, qy, qz), qxy, angle_wrt_x, angle_wrt_z = Cell.print_q_hkl_exp(h, k, l)
     
-    # 211 vertical
-    #Cell.apply_rotation_z(-26.565)
-    #Cell.apply_rotation_y(-65.905)
-    
-    
-    #Cell.apply_rotation_y(45)
-    #Cell.apply_rotation_x(45)
-    
-        
-    
-    #h, k, l = 1, 0, 0 # a
-    #h, k, l = 0, 1, 0 # b
-    h, k, l = 0, 0, 1 # c
-    ##h, k, l = 2, 1, 1
-    #h, k, l = 1, 1, 1
-    
-    qhkl, (qx, qy, qz), qxy, angle_wrt_x, angle_wrt_z = Cell.print_q_hkl_exp(h, k, l)
-    
-    #im_dir = './'
-    #infile = im_dir + 'c91.png'
     im_dir = '/home/etsai/BNL/Users/CMS/LSita/2021C2/LSita/saxs/analysis/Bar3_offline/Index/'
-    infile = im_dir + 'Bar3s1_thermal_CW03-34_190nm_vac_chp2_8265.6s_T100.673C_th0.150_x-0.371_y0.000_20.00s_009508_saxs.png'
-    infile = im_dir + 'Run1_thermal_CW03-58_160nm_vac_chp1_6609.6s_T170.224C_th0.150_x-0.750_y0.000_20.00s_002161_saxs.png'
-  
-       
-    #Cell.list_powder_peaks(filename='peaks.dat', max_hkl=10)
+    infiles = glob.glob(im_dir+'*010441*saxs.png')
+    #infiles = glob.glob(im_dir+'*012385*saxs.png')
+    infile = infiles[0]
     
+    import matplotlib.image as img
+    data = img.imread(infile)
+       
+    #Cell.list_powder_peaks(filename='peaks.dat', max_hkl=10)    
     #Cell.plot_exp_inplane_powder(filename='unitcell-powder.png', plot_region=plot_region, plot_buffers=plot_buffers, label_peaks=True, max_hkl=10, peaks_present=peaks_present)
     #im_dir = './q_images/'
     #save_dir = './exp_inplane/'
 
-
     #Cell.plot_ewald_inplane_powder(e, filename='ewald.png', plot_region=plot_region, plot_buffers=plot_buffers, label_peaks=True, blanked_figure=True, max_hkl=5, thresh=0.005, peaks_present=peaks_present, dpi=dpi)
     #im_dir = './qr_images/'
     #save_dir = './ewald_inplane/'
-
-
-    #Cell.plot_ewald(e, filename='ewald.png', plot_region=plot_region, plot_buffers=plot_buffers, label_peaks=True, blanked_figure=True, max_hkl=5, thresh=0.5, peaks_present=peaks_present, dpi=dpi)
-    #im_dir = './qr_images/'
-    #save_dir = './ewald/'
-
-    #Cell.plot_ewald_qxqz(e, filename='ewald.png', plot_region=plot_region, plot_buffers=plot_buffers, label_peaks=True, blanked_figure=True, max_hkl=5, thresh=0.25, peaks_present=peaks_present, dpi=dpi)
-    #im_dir = './q_images/'
-    #save_dir = './ewald_qxqz/'
-
-
-    #infile = im_dir + 'run04_kinetics-120C_150nm-chip1_th0.150_85.0s_T86.340C_10.00s_73365_saxs.png'
-    #outfile =  save_dir + infile[len(im_dir):-4] + '-overlay.png'
-    #cmd = 'composite -gravity center ewald.png ' + infile + ' ' + outfile
-    #os.system(cmd)
     
-    
-
-    #Cell.plot_ewald_two_beam(e, Material_Vacuum, Material_BCP, Material_Si, filename='ewald-two_beam.png', plot_region=plot_region, plot_buffers=plot_buffers, label_peaks=True, blanked_figure=False, max_hkl=8, thresh=0.1)
-
-    #Cell.plot_ewald_DWBA(e, Material_Vacuum, Material_BCP, Material_Si, filename='ewald-DWBA.png', plot_region=plot_region, plot_buffers=plot_buffers, label_peaks=True, blanked_figure=True, max_hkl=8, thresh=0.1)
-
-    Cell.plot_ewald_two_beam_qxqz(e, Material_Vacuum, Material_BCP, Material_Si, filename='ewald-two_beam.png', plot_region=plot_region, plot_buffers=plot_buffers, peaks_present=peaks_present, label_peaks=False, blanked_figure=True, max_hkl=8, thresh=0.1, dpi=dpi)
-    #im_dir = './q_images/'
-    #save_dir = './'
-
-    save_dir = im_dir #'/home/etsai/BNL/Users/CMS/LSita/2021C2/LSita/saxs/analysis/Bar3_offline/'
-
-
     if 1:
-        cyl_repeat_nm = 9
-        cyl_repeat_A = cyl_repeat_nm*10.0    
-        Cell = UnitCell( cyl_repeat_A, cyl_repeat_A, cyl_repeat_A, 90.0, 90.0, 90.0 )
-        qhkl, (qx, qy, qz), qxy, angle_wrt_x, angle_wrt_z = Cell.print_q_hkl_exp(h, k, l)    
-        Cell.plot_ewald_two_beam_qxqz(e, Material_Vacuum, Material_BCP, Material_Si, filename='ewald-two_beam2.png', plot_region=plot_region, plot_buffers=plot_buffers, peaks_present=peaks_present, label_peaks=False, blanked_figure=True, max_hkl=8, thresh=0.1, dpi=dpi)  
-    
+        peak_sum = Cell.plot_ewald_two_beam_qxqz(e, Material_Vacuum, Material_BCP, Material_Si, filename='ewald-two_beam.png', plot_region=plot_region, plot_buffers=plot_buffers, peaks_present=peaks_present, label_peaks=1, blanked_figure=True, max_hkl=5, thresh=0.1, dpi=dpi, plot_clear=False, data=data)
+        idx = infile.find('_T')
+        st_title = "{}\n{}\n{}".format(infile[len(im_dir):idx+1], infile[idx+1:-4], note)
+        plt.ylabel(st_title, fontsize=10.5)
         
-    outfile =  save_dir + infile[len(im_dir):-4] + '-overlay.png'
-    cmd = 'composite -gravity center ewald-two_beam.png ' + infile + ' ' + outfile
-    os.system(cmd)
+        #im_dir = './q_images/'
+        #save_dir = './'
+    
+        save_dir = im_dir #'/home/etsai/BNL/Users/CMS/LSita/2021C2/LSita/saxs/analysis/Bar3_offline/'
+        outfile =  save_dir + infile[len(im_dir):-4] + '-overlay.png'
+        #cmd = 'composite -gravity center ewald-two_beam.png ' + infile + ' ' + outfile
+        #os.system(cmd)
+        plt.savefig(outfile)
+     
 
-    outfile2 =  save_dir + infile[len(im_dir):-4] + '-overlay2.png'
-    cmd = 'composite -gravity center ewald-two_beam2.png ' + outfile + ' ' + outfile2
-    os.system(cmd)    
-
-    if 1:
-        rot_array = np.linspace(0, 90, num=20)
-        rot_array = [90]
+    if 0:
+        rot_array = np.linspace(0, 90, num=4)
+        #rot_array = [90]
         for i, angle in enumerate(rot_array):
             print('angle = {:.3f}'.format(angle))
             Cell.set_rotation_angles(eta=0.0, phi=0.0, theta=0.0) # Reset orientation
             
             # a points +x (horizontally)
-            Cell.apply_rotation_y(90)
+            Cell.apply_rotation_x(-90)
+            #Cell.apply_rotation_y(90)
             # a points +z (vertically)
             
             Cell.apply_rotation_y(angle)
 
-            Cell.plot_ewald_two_beam_qxqz(e, Material_Vacuum, Material_BCP, Material_Si, filename='frame.png'.format(int(angle*10)), plot_region=plot_region, plot_buffers=plot_buffers, peaks_present=peaks_present, label_peaks=False, blanked_figure=True, max_hkl=8, thresh=0.1, dpi=dpi)
+            Cell.plot_ewald_two_beam_qxqz(e, Material_Vacuum, Material_BCP, Material_Si, filename='frame.png'.format(int(angle*10)), plot_region=plot_region, plot_buffers=plot_buffers, peaks_present=peaks_present, label_peaks=False, blanked_figure=True, max_hkl=8, thresh=0.1, dpi=dpi, plot_clear=False, data=data)
             
             if i>0:
                 cmd = 'composite -gravity center frame.png combinedlast.png combined.png'
@@ -3723,6 +3689,8 @@ if True:
                 os.system('cp frame.png combined.png')
             os.system('cp combined.png combinedlast.png')
             
+        st_title = "{}\n{}\n{}".format(infile[len(im_dir):-53], infile[-53:-4], note)
+        plt.ylabel(st_title, fontsize=10.5)
             
         #im_dir = './q_images/'
         #save_dir = './ewald_two_beam_qxqz/'
@@ -3734,4 +3702,6 @@ if True:
             
 
     
-    
+print(infile)
+
+
