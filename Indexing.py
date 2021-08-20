@@ -17,7 +17,7 @@ if False:
 
 
 
-import os, glob
+import os, glob, sys
 from math import sin, cos, radians, pi, sqrt
 import numpy as np
 import pylab as plt
@@ -2153,7 +2153,7 @@ class UnitCell(object):
         fout.close()
 
  
-    def plot_ewald_two_beam_qxqz(self, ewaldsphere, Material_ambient, Material_film, Material_substrate, filename='output.png', plot_region=[None, None, None, None], plot_buffers=[0.16, 0.035, 0.16, 0.03], label_peaks=False, blanked_figure=False, peaks_present=None, max_hkl=10, thresh=0.01, dpi=100, plot_clear=False, data=None):
+    def plot_ewald_two_beam_qxqz(self, ewaldsphere, Material_ambient, Material_film, Material_substrate, filename='output.png', plot_region=[None, None, None, None], plot_buffers=[0.16, 0.035, 0.16, 0.03], label_peaks=False, blanked_figure=False, peaks_present=None, max_hkl=10, thresh=0.01, dpi=100, plot_clear=False, data=None, marker=['x','o'], markersize=45, markercolor=['g','y'], w = 35, TR=0):
         
         # Prepare for refraction correction computations
         k_xray =e.get_k() 
@@ -2177,7 +2177,7 @@ class UnitCell(object):
         #plt.rcParams['xtick.labelsize'] = 28
         #plt.rcParams['ytick.labelsize'] = 28
 
-        fig = plt.figure(num=11, figsize=(10,10)); plt.clf()
+        fig = plt.figure(num=10, figsize=(10,10)); #plt.clf()
         #fig.subplots_adjust(left=0.17, bottom=0.15, right=0.97, top=0.94, wspace=0.2, hspace=0.2)
         #ax = plt.subplot(111)
         left_buf, right_buf, bottom_buf, top_buf = plot_buffers
@@ -2417,25 +2417,41 @@ class UnitCell(object):
 
         pixel_size = (plot_region[1]-plot_region[0]) / data.shape[0]
         data_gray = color.rgb2gray(data)
-        peak_sum = 0; w = 30
-        print('pixel_size = {}, w = {}'.format(pixel_size, w))
+        data_mask = np.ones(data_gray.shape)
+        peak_sum = 0; 
+        #print('pixel_size = {}, w = {}'.format(pixel_size, w))
         for ii, peak in enumerate(peaks_x):
             x_pixel = int((peaks_x[ii]-plot_region[0])/pixel_size)
             y_pixel = int((peaks_y[ii]-plot_region[2])/pixel_size)
             peak_sum = peak_sum + np.sum(data_gray[y_pixel-w:y_pixel+w+1, x_pixel-w:x_pixel+w+1])
-        for ii, peak in enumerate(peaksTR_x):
-            x_pixel = int((peaksTR_x[ii]-plot_region[0])/pixel_size)
-            y_pixel = int((peaksTR_y[ii]-plot_region[2])/pixel_size)
-            peak_sum = peak_sum + np.sum(data_gray[y_pixel-w:y_pixel+w+1, x_pixel-w:x_pixel+w+1])
+            data_mask[y_pixel-w:y_pixel+w+1, x_pixel-w:x_pixel+w+1] = 0
+        if TR==True:
+            for ii, peak in enumerate(peaksTR_x):
+                x_pixel = int((peaksTR_x[ii]-plot_region[0])/pixel_size)
+                y_pixel = int((peaksTR_y[ii]-plot_region[2])/pixel_size)
+                peak_sum = peak_sum + np.sum(data_gray[y_pixel-w:y_pixel+w+1, x_pixel-w:x_pixel+w+1])
+                data_mask[y_pixel-w:y_pixel+w+1, x_pixel-w:x_pixel+w+1] = 0
+
+        sum_nopeak = np.nansum(np.multiply(data_gray,data_mask))
             
-        plt.scatter( peaks_x, peaks_y, s=50, marker='x', facecolor=(0,1,0), linewidth=2 )
-        plt.scatter( peaksTR_x, peaksTR_y, s=50, facecolor='none', edgecolor=(1,1,0), linewidth=2 )
+        if marker[0]=='.':
+            markersize = int(markersize/2)
+        else:
+            markersize = markersize
+        plt.scatter( peaks_x, peaks_y, s=markersize, marker=marker[0], facecolor=markercolor[0], linewidth=2 )
+
+        if marker[1]=='.':
+            markersize = int(markersize/2)
+        else:
+            markersize = markersize
+        plt.scatter( peaksTR_x, peaksTR_y, s=markersize, marker=marker[1], facecolor='none', edgecolor=markercolor[1], linewidth=2 )
+        
         if label_peaks:
             for x, y, s in zip( peaks_x, peaks_y, names ):
                 if blanked_figure:
-                    plt.text( x, y, s, size=12, color='1.0', horizontalalignment='left', verticalalignment='bottom' )
+                    plt.text( x, y, s, fontweight='bold', size=12, color='1.0', horizontalalignment='left', verticalalignment='bottom' )
                 else:
-                    plt.text( x, y, s, size=12, color='0.0', horizontalalignment='left', verticalalignment='bottom' )
+                    plt.text( x, y, s, fontweight='bold', size=12, color='0.0', horizontalalignment='left', verticalalignment='bottom' )
             #for x, y, s in zip( peaksTR_x, peaksTR_y, namesTR ):
             #    if blanked_figure:
             #        plt.text( x, y, s, size=12, color='1.0', horizontalalignment='left', verticalalignment='top' )
@@ -2502,19 +2518,24 @@ class UnitCell(object):
             plt.xlabel( r'$q_{xy} \, (\mathrm{\AA^{-1}})$', size=30 )
             plt.ylabel( r'$q_{z} \, (\mathrm{\AA^{-1}})$', size=30  )
             
-        plt.text(xf*0.6,yi*0.95,'sum {:.1f}'.format(peak_sum),color='w')
-        plt.savefig( filename, transparent=blanked_figure, dpi=dpi ) 
+        #plt.text(xf*0.5,yi*0.95,'{}\nfit {:.5f}'.format(note1,peak_sum/sum_nopeak),color='w')
+        if 0:
+            plt.text(xf*0.5,yi*0.95,'{}'.format(note1),color='w')
+            plt.savefig( filename, transparent=blanked_figure, dpi=dpi ) 
         
         if data is not None:
             plt.imshow(data, alpha=0.8, extent=plot_region)   
         
-        print('peak_sum = {}\n'.format(peak_sum))
-        plot_box([peaks_y[0], peaks_x[0]], w*2*pixel_size*np.asarray([1,1]), color='r')
+        if marker[0] == 'x':
+            #print('peak_sum = {:.1f}\n'.format(peak_sum))
+            plot_box([peaks_y[0], peaks_x[0]], w*2*pixel_size*np.asarray([1,1]), color='r')
         
         if plot_clear==True:
             plt.close()
+            
+        #print("fit = {:.5f}, peak_sum = {:.1f}".format(peak_sum/sump_nopeak, peak_sum))
         
-        return peak_sum
+        return peak_sum, sum_nopeak
         
     # END OF: class UnitCell(object)
     ############################################
@@ -3555,12 +3576,10 @@ if True:
     # Strongest peaks
     peaks_present = None
     #peaks_present = [ [1,0,0], [2,0,0], [3,0,0], [4,0,0] ] # Lamellae   
-
     # Ia3d cubic gyroid
     #peaks_present = [ [2,1,1], [2,2,0], [3,2,1], [4,0,0], [4,2,0], [3,3,2], [4,2,2], [4,3,1] ] 
-    
     #peaks_present = [ [-1,1,0], [0,1,-1], [1,0,-1], [1, -1,0], [-1,2,-1]] 
-    
+    #peaks_present = [ [0,1,0], [1,1,0]]       
     if 0:
         # Permute ordering
         peaks_present_base = peaks_present
@@ -3572,9 +3591,7 @@ if True:
             peaks_present.append([b,a,c])
             peaks_present.append([b,c,a])
             peaks_present.append([c,a,b])
-            peaks_present.append([c,b,a])
-
-    
+            peaks_present.append([c,b,a])    
     if 0:
         # Permute signs
         peaks_present_base = peaks_present
@@ -3589,8 +3606,7 @@ if True:
             peaks_present.append([-h,+k,+l])
             peaks_present.append([-h,+k,-l])
             peaks_present.append([-h,-k,+l])
-            peaks_present.append([-h,-k,-l])
-        
+            peaks_present.append([-h,-k,-l])       
     
     #peaks_present_abs = []
     #for peak in peaks_present:
@@ -3598,10 +3614,9 @@ if True:
         #peaks_present_abs.append( [abs(h), abs(k), abs(l)] )
     
     theta_error = 0.035 # KY
-    theta_error = 0.0 
-    theta_target = 0.15
+    theta_error = -0.005 #RL: +/- 0.005
+    theta_target = 0.15 
     e = EwaldSphere( wavelength=0.9184, theta_incident=theta_target+theta_error ) # 13.5 keV
-
 
     plot_region = [-0.3, 0.3, -0.2, 0.4] 
     plot_buffers = [0,0,0,0] #[0.30, 0.05, 0.25, 0.05]    
@@ -3611,47 +3626,72 @@ if True:
     ###################################################################    
     print( '\n\nUnit Cell ----------------------------------------' )
     
-    if 1: 
-        a_nm = 11.9
-        b_nm = 8.9
+    if 1: #FCC (qz 200), BCC (qz 110)
+        a_nm = 12.5 #monoclinic
+        b_nm = 8.8
         alpha = 90
         beta =  90
-        gamma = 116
+        gamma = 112
         a_A = a_nm*10.0
         b_A = b_nm*10.0
         Cell = UnitCell( a_A, b_A, 0.01, alpha, beta, gamma)
 
-    rotate_x_deg = -90 # 90
+    rotate_x_deg = 90 # 90
     rotate_y_deg = 0   # 90+30
     rotate_z_deg = 0   # 0
     Cell.apply_rotation_x(rotate_x_deg)
     Cell.apply_rotation_y(rotate_y_deg)
     Cell.apply_rotation_z(rotate_z_deg)       
     note = "a_nm {}, b_nm {}, gamma_deg {}\n rotate x {}, y {}, z {} degree".format(a_nm, b_nm, gamma, rotate_x_deg, rotate_y_deg, rotate_z_deg)
-    print(note)
 
     #h, k, l = 0, 0, 1    
     #qhkl, (qx, qy, qz), qxy, angle_wrt_x, angle_wrt_z = Cell.print_q_hkl_exp(h, k, l)
     
     im_dir = '/home/etsai/BNL/Users/CMS/LSita/2021C2/LSita/saxs/analysis/Bar3_offline/Index/'
-    infiles = glob.glob(im_dir+'*010441*saxs.png')
-    #infiles = glob.glob(im_dir+'*012385*saxs.png')
+    #infiles = glob.glob(im_dir+'*010441*saxs.png')
+    infiles = glob.glob(im_dir+'*010300*saxs.png')
+    #infiles = glob.glob(im_dir+'*09508*saxs.png')
     infile = infiles[0]
+    
+    idx = infile.find('_T')
+    T_degC = infile[idx+2:idx+9]
+    idx = infile.find('_saxs')
+    scan_id = infile[idx-6:idx]
+    note1 = "scan {}\nT_degC {}\na_nm {}\nb_nm {}\ngamma_deg {}".format(scan_id, T_degC, a_nm, b_nm, gamma, rotate_x_deg, rotate_y_deg, rotate_z_deg)
+    print(note)
     
     import matplotlib.image as img
     data = img.imread(infile)
-       
-    #Cell.list_powder_peaks(filename='peaks.dat', max_hkl=10)    
-    #Cell.plot_exp_inplane_powder(filename='unitcell-powder.png', plot_region=plot_region, plot_buffers=plot_buffers, label_peaks=True, max_hkl=10, peaks_present=peaks_present)
-    #im_dir = './q_images/'
-    #save_dir = './exp_inplane/'
-
-    #Cell.plot_ewald_inplane_powder(e, filename='ewald.png', plot_region=plot_region, plot_buffers=plot_buffers, label_peaks=True, blanked_figure=True, max_hkl=5, thresh=0.005, peaks_present=peaks_present, dpi=dpi)
-    #im_dir = './qr_images/'
-    #save_dir = './ewald_inplane/'
+     
+    ### Powder peaks
+    if 0:
+        Cell.list_powder_peaks(filename='peaks.dat', max_hkl=10)  
+        powder_peaks = np.genfromtxt('./peaks.dat')
+        q_peaks = np.unique(powder_peaks[:,0])
+        q_peaks = q_peaks[q_peaks<5.0]
+        plt.figure(5); plt.clf()
+        plt.plot(q_peaks, np.ones(q_peaks.shape[0]), 'x')
     
-    if 1:
-        peak_sum = Cell.plot_ewald_two_beam_qxqz(e, Material_Vacuum, Material_BCP, Material_Si, filename='ewald-two_beam.png', plot_region=plot_region, plot_buffers=plot_buffers, peaks_present=peaks_present, label_peaks=1, blanked_figure=True, max_hkl=5, thresh=0.1, dpi=dpi, plot_clear=False, data=data)
+    ### Index peaks
+    if 0:
+        max_fit = 0
+        gamma_array = np.arange(111, 114, 0.5)
+        for gamma in gamma_array:
+            for a in np.arange(a_A-2, a_A+3, 1):
+                for b in np.arange(b_A-2, b_A+3, 1):
+                    Cell = UnitCell( a, b, 0.01, alpha, beta, gamma)
+                    Cell.apply_rotation_x(rotate_x_deg)
+                    peak_sum, sum_nopeak = Cell.plot_ewald_two_beam_qxqz(e, Material_Vacuum, Material_BCP, Material_Si, filename='ewald-two_beam.png', plot_region=plot_region, plot_buffers=plot_buffers, peaks_present=peaks_present, label_peaks=1, blanked_figure=True, max_hkl=4, thresh=0.1, dpi=dpi, plot_clear=0, data=data, w = 35, TR=1) 
+                    fit = peak_sum/sum_nopeak
+                    if fit > max_fit:
+                        a_argmax = a/10
+                        b_argmax = b/10
+                        gamma_argmax = gamma 
+                        max_fit = fit
+                    print('{}, {}, {}, fit={:.5f}; {}, {}, {}, {:.5f}'.format(a/10, b/10, gamma, peak_sum/sum_nopeak, a_argmax, b_argmax, gamma_argmax, max_fit))        
+        
+    else:
+        sum_peak, sum_nopeak = Cell.plot_ewald_two_beam_qxqz(e, Material_Vacuum, Material_BCP, Material_Si, filename='ewald-two_beam.png', plot_region=plot_region, plot_buffers=plot_buffers, peaks_present=peaks_present, label_peaks=1, blanked_figure=True, max_hkl=4, thresh=0.1, dpi=dpi, plot_clear=False, data=data, w = 35, TR=1, markercolor=[[0.3,1,0], [1,0.7,0]] )
         idx = infile.find('_T')
         st_title = "{}\n{}\n{}".format(infile[len(im_dir):idx+1], infile[idx+1:-4], note)
         plt.ylabel(st_title, fontsize=10.5)
@@ -3664,23 +3704,38 @@ if True:
         #cmd = 'composite -gravity center ewald-two_beam.png ' + infile + ' ' + outfile
         #os.system(cmd)
         plt.savefig(outfile)
-     
 
-    if 0:
-        rot_array = np.linspace(0, 90, num=4)
-        #rot_array = [90]
+    if 1:
+        fig = plt.figure(10); plt.clf()
+        sum_peak_all = 0
+        sum_nopeak_all = 0
+        rot_array = np.linspace(0, 90, num=10)
+        #rot_array = [0, 10, 45, 50, 85, 90]
         for i, angle in enumerate(rot_array):
+            markercolor = [[0.3,0.8,0], [1,0.7,0]]
+            if i==0:
+                marker = ['x', 'o']
+                label_peaks = True
+            else:
+                marker = ['.',  '.']
+                label_peaks = False
             print('angle = {:.3f}'.format(angle))
             Cell.set_rotation_angles(eta=0.0, phi=0.0, theta=0.0) # Reset orientation
             
             # a points +x (horizontally)
-            Cell.apply_rotation_x(-90)
+            Cell.apply_rotation_x(90)
             #Cell.apply_rotation_y(90)
             # a points +z (vertically)
-            
             Cell.apply_rotation_y(angle)
+            
+            peaks_present = None
 
-            Cell.plot_ewald_two_beam_qxqz(e, Material_Vacuum, Material_BCP, Material_Si, filename='frame.png'.format(int(angle*10)), plot_region=plot_region, plot_buffers=plot_buffers, peaks_present=peaks_present, label_peaks=False, blanked_figure=True, max_hkl=8, thresh=0.1, dpi=dpi, plot_clear=False, data=data)
+            sum_peak, sum_nopeak = Cell.plot_ewald_two_beam_qxqz(e, Material_Vacuum, Material_BCP, Material_Si, filename='frame.png'.format(int(angle*10)), plot_region=plot_region, plot_buffers=plot_buffers, peaks_present=peaks_present, label_peaks=label_peaks, blanked_figure=True, max_hkl=3, thresh=0.1, dpi=dpi, plot_clear=False, data=data,  w=20, TR=1, marker = marker, markercolor=markercolor)
+            
+            sum_peak_all = sum_peak_all + sum_peak
+            sum_nopeak_all = sum_nopeak_all + sum_nopeak
+            print('  {:.0f}, {:.0f}, {:.3f}'.format(sum_peak, sum_nopeak, sum_peak/sum_nopeak))
+            print('  {:.0f}, {:.0f}, {:.3f}'.format(sum_peak_all, sum_nopeak_all, sum_peak_all/sum_nopeak_all))
             
             if i>0:
                 cmd = 'composite -gravity center frame.png combinedlast.png combined.png'
@@ -3689,16 +3744,20 @@ if True:
                 os.system('cp frame.png combined.png')
             os.system('cp combined.png combinedlast.png')
             
-        st_title = "{}\n{}\n{}".format(infile[len(im_dir):-53], infile[-53:-4], note)
-        plt.ylabel(st_title, fontsize=10.5)
-            
-        #im_dir = './q_images/'
-        #save_dir = './ewald_two_beam_qxqz/'
+        #st_title = "{}\n{}\n{}".format(infile[len(im_dir):-53], infile[-53:-4], note)
+        #plt.ylabel(st_title, fontsize=10.5)
 
-        #infile = im_dir + 'run04_kinetics-120C_150nm-chip1_th0.150_85.0s_T86.340C_10.00s_73365_saxs.png'
-        outfile =  save_dir + infile[len(im_dir):-4] + '-overlay_isotropic.png'
-        cmd = 'composite -gravity center combined.png ' + infile + ' ' + outfile
-        os.system(cmd)
+        ##
+        outfile =  save_dir + infile[len(im_dir):-4] + '-all.png'
+        plt.text(0.15,-0.18,'{}\nfit {:.0f}; {:.3f}'.format(note1,sum_peak_all, sum_peak_all/sum_nopeak_all),color='w')
+        plt.text(-0.286, 0.36, '{}\nrotation{}'.format(infile[len(im_dir):infile.find('s_')+1], rot_array),color='w',fontweight='bold')
+        plt.savefig( outfile, transparent=0, dpi=dpi ) 
+        
+        ##
+        if 0:
+            outfile =  save_dir + infile[len(im_dir):-4] + '-overlay_isotropic.png'
+            cmd = 'composite -gravity center combined.png ' + infile + ' ' + outfile
+            os.system(cmd)
             
 
     
