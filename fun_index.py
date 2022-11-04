@@ -132,13 +132,19 @@ def get_index(a=10,b=10,c=10,alp_deg=90,beta_deg=90,gam_deg=90,**kwargs):
     count = 0
     for h in range(range_hkl[0][0], range_hkl[0][1]+1):
         for k in range(range_hkl[1][0], range_hkl[1][1]+1):
-            for l in range(range_hkl[2][0], range_hkl[2][1]+1):
-                if GI == 1 and h+l<12:
+            #if np.abs(h)==1 and np.abs(k==1):
+            #    range_l = [range_hkl[2][0], range_hkl[2][1]+3]
+            #else:
+            range_l = range_hkl[2]
+            for l in range(range_l[0], range_l[1]+1):
+                if GI == 1: 
                     temp = 1 
                 else:
                     temp = (np.sum(np.array([h,k,l])*np.array(ori_hkl))==0)
+                    
+                #if k>1 and h<0: temp=0
            
-                if check_ref(h, k, l, spacegroup) and temp:
+                if 1: #check_ref(h, k, l, spacegroup) and temp:
                     
                     d = d_rule(lattice=spacegroup, a=a, h=h, k=k, l=l)
                     q = 2*np.pi/d
@@ -175,11 +181,12 @@ def get_index(a=10,b=10,c=10,alp_deg=90,beta_deg=90,gam_deg=90,**kwargs):
                     
                     #transfer to space geometry
                     #try:
-                    if False:
+                    if True:
                         beta=asin(Qz/2/pi*lambda_A-sin(Inci))
 
-                        beta_n=asin(sqrt(sin(beta)**2+sin(Inci_c)**2))
+                        beta_n=asin(sqrt(sin(beta)**2+sin(Inci_c)**2)) # + 2*Inci
                         theta=asin(Qxy/4/pi*lambda_A)
+                        
                         if (cos(Inci)**2+cos(beta)**2-4*sin(theta)**2)>(2*cos(Inci)*cos(beta)):
                             phi = acos(1)
                         else:
@@ -189,11 +196,13 @@ def get_index(a=10,b=10,c=10,alp_deg=90,beta_deg=90,gam_deg=90,**kwargs):
                         #save data
                         phi_list.append(phi_n)
                         nu_list.append(nu_n)
+                        
+                        
 
                     #except:
                     #    print('math error. ')
                     
-    return hkl_list, Qxy_list, Qz_list, q_data    
+    return hkl_list, Qxy_list, Qz_list, q_data, phi_list,  nu_list 
 
 
 #################################
@@ -217,9 +226,10 @@ def plot_index(data, Qxy_list, Qz_list, hkl_list, **param_plot):
     else: log10=0
     
     if 'lim1' in param_plot: lim1 = param_plot['lim1']
-    else: lim1 = [0, 2]
+    else: lim1 = [np.min(y_axis), np.max(y_axis)]
     if 'lim2' in param_plot: lim2 = param_plot['lim2']
-    else: lim2 = [0, 2] 
+    else: lim2 = [np.min(x_axis), np.max(x_axis)]
+    print('lim1, lim2 = {}, {}'.format(lim1, lim2))
         
     if 'textcolor' in param_plot:
         color = param_plot['textcolor']
@@ -231,7 +241,11 @@ def plot_index(data, Qxy_list, Qz_list, hkl_list, **param_plot):
     else:
         FS = 12
     
-    
+    if 'index' in param_plot:
+        index = param_plot['index']
+    else:
+        index = 1
+        
     fig = plt.gcf()
     #fig.suptitle('GID in q-space', fontsize=15, fontweight='bold')
 
@@ -240,25 +254,37 @@ def plot_index(data, Qxy_list, Qz_list, hkl_list, **param_plot):
         if flag: img_plot = img_use
         else: img_plot = img
             
-        if log10==1: img_plot = np.log10(img_plot)
+        if log10==1: 
+            img_plot = np.log10(img_plot)
+            img_plot[img_plot<0] = 0
         
         if 'vmin' in param_plot: vmin = param_plot['vmin']
-        else: vmin = np.min(img_plot)
+        else: vmin = np.nanmin(img_plot)
         if 'vmax' in param_plot: vmax = param_plot['vmax']
-        else: vmax = np.max(img_plot)*0.98
+        else: vmax = np.nanmax(img_plot)*0.98
+        print('vmin, vmax = {}, {}'.format(vmin, vmax))
     
-        plt.pcolormesh(X,Y,(img_plot), vmin=vmin, vmax=vmax, cmap=cmap, alpha = 1); plt.colorbar()
+        plt.pcolormesh(X,Y,(img_plot), vmin=vmin, vmax=vmax, cmap=cmap, alpha = 1); 
+        #cbar = plt.colorbar(fraction=0.025, pad=0.01, aspect=27.5, ticks=[]) 
+        cbar = plt.colorbar(fraction=0.025, pad=0.01, aspect=27.5) 
         
-    plt.plot(Qxy_list, Qz_list,'cx',markeredgecolor='c',markersize=6)
-    plt.xlim(lim1[0], lim1[1])
-    plt.ylim(lim2[0], lim2[1])
-    plt.xlabel('q',fontsize=15, fontweight='bold')
+    if index:
+        plt.plot(Qxy_list, Qz_list,'cx',markeredgecolor='c',markersize=6)
+        plt.xlim(lim1[0], lim1[1])
+        plt.ylim(lim2[0], lim2[1])
+        plt.xticks(fontsize=FS+3,fontweight='bold')
+        plt.yticks(fontsize=FS+3,fontweight='bold')
+        plt.xlabel('q',fontsize=FS+3, fontweight='bold')
     
     if not data: plt.grid()
+
     ax1.set_aspect('equal', 'box')
-    for i, txt in enumerate(hkl_list):
-        #plt.annotate(txt, (Qxy_list[i], Qz_list[i]*(1+random()/6)),color=color,fontsize=FS, fontweight='bold')
-        plt.annotate(txt, (Qxy_list[i]+0.005*2, Qz_list[i]+0.005*2) ,color=color,fontsize=FS, fontweight='bold')
+        
+    if index:    
+        for i, txt in enumerate(hkl_list):
+            #plt.annotate(txt, (Qxy_list[i], Qz_list[i]*(1+random()/6)),color=color,fontsize=FS, fontweight='bold')
+            if 1: #hkl_list[i][0] != '-' or hkl_list[i][1]=='1' or hkl_list[i][1]=='2':
+                plt.annotate(txt, (Qxy_list[i]+0.005*2, Qz_list[i]+0.005*2) ,color=color,fontsize=FS, fontweight='bold')
 
     if 0:
         ax2 = fig.add_subplot(122)

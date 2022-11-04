@@ -37,7 +37,7 @@ param1 = {
     "beta_deg": 92.4,
     "gam_deg": 90, 
     "spacegroup": 14, # 194(HCP), 225(FCC), 229(BCC), 62(pnma) # See fun_index.py -> check_ref(h, k, l, spacegroup)
-    "ori_hkl": [0, 0, 1],  # Beam direction if Transmission, normal to film if GI
+    "ori_hkl": [0, 0, 1],  
     "range_hkl": [[0, 3], [-1, 3], [0, 9]],
     "filename": '/home/etsai/BNL/Research/GIWAXS_tomo_2019C2/BTBT_TOMO_test3_25_average/BTBT_TOMO_test3_25_average.npz', 
 }
@@ -52,11 +52,10 @@ param2 = {
     "beta_deg": 99.4,
     "gam_deg": 90, 
     "spacegroup": 14, # 194(HCP), 225(FCC), 229(BCC), 62(pnma) # See fun_index.py -> check_ref(h, k, l, spacegroup)
-    "ori_hkl": [0, 0, 1],  # Beam direction if Transmission, normal to film if GI
-    #"range_hkl": [[-1, 3], [-1, 3], [-1, 3]],
+    "ori_hkl": [0, 0, 1],  
     "range_hkl": [[-2, 3], [0, 3], [0, 11]],
     "filename": '/home/etsai/BNL/Research/GIWAXS_tomo_2019C2/BTBT_TOMO_test3_25_average/BTBT_TOMO_test3_25_average.npz',
-    #"filename": '/home/etsai/BNL/Users/SMI/ABraunschweig/2020C1/306008_analysis/Results/AB2/qr/q_map_waxs_AB2_1_4_MeDPP_glass_thermal_5minVSADCM_0.0800deg_x9350_.tiff'
+
 }
 
 param0 = { 
@@ -67,12 +66,11 @@ param0 = {
     "alp_deg": 90,
     "beta_deg": 93.2,
     "gam_deg": 90, 
-    "spacegroup": 14, # 194(HCP), 225(FCC), 229(BCC), 62(pnma) # See fun_index.py -> check_ref(h, k, l, spacegroup)
-    "ori_hkl": [0, 0, 1],  # Beam direction if Transmission, normal to film if GI
-    #"range_hkl": [[-1, 3], [-1, 3], [-1, 3]],
-    "range_hkl": [[-2, 3], [0, 3], [0, 11]],
+    "spacegroup": 14, 
+    "ori_hkl": [0, 0, 1],  
+    "range_hkl": [[-1,1], [-1, 0], [0, 1]],
     "filename": '/home/etsai/BNL/Research/GIWAXS_tomo_2019C2/BTBT_TOMO_test3_25_average/BTBT_TOMO_test3_25_average.npz',
-    #"filename": '/home/etsai/BNL/Users/SMI/ABraunschweig/2020C1/306008_analysis/Results/AB2/qr/q_map_waxs_AB2_1_4_MeDPP_glass_thermal_5minVSADCM_0.0800deg_x9350_.tiff'
+
 }
 
 
@@ -110,13 +108,13 @@ if 'filename' in param:
 ## Plot index
 param_plot = {
     "log10": 0,
-    "lim1": [-2, 3.2],  # axis limits
-    "lim2": [-0.5, 3],  # axis limits
-    "vmin": 0,  # colorbar range
-    "vmax": 35,
-    "textcolor": 'w',
+    "lim1": [-2, 3+1],  # axis limits
+    "lim2": [-2, 2.75+1],  # axis limits
+    "vmin": 4,  # colorbar range
+    "vmax": 24,
+    "textcolor": 'r',
     "cmap": 'magma', #'jet',
-    "FS": 9
+    "FS": 10
 }
 plt.figure(10, figsize=(12,10)); plt.clf()
 plot_index(data, Qxy_list, Qz_list, hkl_list, **param_plot) 

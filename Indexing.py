@@ -3627,15 +3627,16 @@ if True:
     print( '\n\nUnit Cell ----------------------------------------' )
     
     if 1: #FCC (qz 200), BCC (qz 110)
-        a_nm = 12.5 #monoclinic
-        b_nm = 8.8
+        a_nm = 9 #monoclinic
+        b_nm = 9
         alpha = 90
         beta =  90
-        gamma = 112
+        gamma = 60
         a_A = a_nm*10.0
         b_A = b_nm*10.0
         Cell = UnitCell( a_A, b_A, 0.01, alpha, beta, gamma)
 
+    flag_all_rot = 0
     rotate_x_deg = 90 # 90
     rotate_y_deg = 0   # 90+30
     rotate_z_deg = 0   # 0
@@ -3643,14 +3644,9 @@ if True:
     Cell.apply_rotation_y(rotate_y_deg)
     Cell.apply_rotation_z(rotate_z_deg)       
     note = "a_nm {}, b_nm {}, gamma_deg {}\n rotate x {}, y {}, z {} degree".format(a_nm, b_nm, gamma, rotate_x_deg, rotate_y_deg, rotate_z_deg)
-
-    #h, k, l = 0, 0, 1    
-    #qhkl, (qx, qy, qz), qxy, angle_wrt_x, angle_wrt_z = Cell.print_q_hkl_exp(h, k, l)
     
     im_dir = '/home/etsai/BNL/Users/CMS/LSita/2021C2/LSita/saxs/analysis/Bar3_offline/Index/'
-    #infiles = glob.glob(im_dir+'*010441*saxs.png')
-    infiles = glob.glob(im_dir+'*010300*saxs.png')
-    #infiles = glob.glob(im_dir+'*09508*saxs.png')
+    infiles = glob.glob(im_dir+'*012385*saxs.png')
     infile = infiles[0]
     
     idx = infile.find('_T')
@@ -3696,16 +3692,15 @@ if True:
         st_title = "{}\n{}\n{}".format(infile[len(im_dir):idx+1], infile[idx+1:-4], note)
         plt.ylabel(st_title, fontsize=10.5)
         
-        #im_dir = './q_images/'
-        #save_dir = './'
+        print('Fitting: {:.0f}, {:.0f}, {:.4f}'.format(sum_peak, sum_nopeak, sum_peak/sum_nopeak))
     
-        save_dir = im_dir #'/home/etsai/BNL/Users/CMS/LSita/2021C2/LSita/saxs/analysis/Bar3_offline/'
-        outfile =  save_dir + infile[len(im_dir):-4] + '-overlay.png'
+        #save_dir = im_dir #'/home/etsai/BNL/Users/CMS/LSita/2021C2/LSita/saxs/analysis/Bar3_offline/'
+        #outfile =  save_dir + infile[len(im_dir):-4] + '-overlay.png'
         #cmd = 'composite -gravity center ewald-two_beam.png ' + infile + ' ' + outfile
         #os.system(cmd)
-        plt.savefig(outfile)
+        #plt.savefig(outfile)
 
-    if 1:
+    if flag_all_rot:
         fig = plt.figure(10); plt.clf()
         sum_peak_all = 0
         sum_nopeak_all = 0
@@ -3734,8 +3729,8 @@ if True:
             
             sum_peak_all = sum_peak_all + sum_peak
             sum_nopeak_all = sum_nopeak_all + sum_nopeak
-            print('  {:.0f}, {:.0f}, {:.3f}'.format(sum_peak, sum_nopeak, sum_peak/sum_nopeak))
-            print('  {:.0f}, {:.0f}, {:.3f}'.format(sum_peak_all, sum_nopeak_all, sum_peak_all/sum_nopeak_all))
+            print('  {:.0f}, {:.0f}, {:.4f}'.format(sum_peak, sum_nopeak, sum_peak/sum_nopeak))
+            print('  {:.0f}, {:.0f}, {:.4f}'.format(sum_peak_all, sum_nopeak_all, sum_peak_all/sum_nopeak_all))
             
             if i>0:
                 cmd = 'composite -gravity center frame.png combinedlast.png combined.png'
@@ -3749,8 +3744,8 @@ if True:
 
         ##
         outfile =  save_dir + infile[len(im_dir):-4] + '-all.png'
-        plt.text(0.15,-0.18,'{}\nfit {:.0f}; {:.3f}'.format(note1,sum_peak_all, sum_peak_all/sum_nopeak_all),color='w')
-        plt.text(-0.286, 0.36, '{}\nrotation{}'.format(infile[len(im_dir):infile.find('s_')+1], rot_array),color='w',fontweight='bold')
+        plt.text(0.15,-0.18,'{}\nfit {:.0f}; {:.4f}'.format(note1,sum_peak_all, sum_peak_all/sum_nopeak_all),color='w')
+        plt.text(-0.286, 0.36, '{}\nrotation{}'.format(infile[len(im_dir):infile.find('s_')+1], rot_array),color='w')
         plt.savefig( outfile, transparent=0, dpi=dpi ) 
         
         ##
