@@ -283,8 +283,12 @@ def plot_index(data, Qxy_list, Qz_list, hkl_list, **param_plot):
     if index:    
         for i, txt in enumerate(hkl_list):
             #plt.annotate(txt, (Qxy_list[i], Qz_list[i]*(1+random()/6)),color=color,fontsize=FS, fontweight='bold')
-            if 1: #hkl_list[i][0] != '-' or hkl_list[i][1]=='1' or hkl_list[i][1]=='2':
-                plt.annotate(txt, (Qxy_list[i]+0.005*2, Qz_list[i]+0.005*2) ,color=color,fontsize=FS, fontweight='bold')
+            if np.mod(float(txt[0]), 3) == 0: #1: #hkl_list[i][0] != '-' or hkl_list[i][1]=='1' or hkl_list[i][1]=='2':
+                plt.annotate(txt, (Qxy_list[i]+0.005*2, Qz_list[i]+0.01*5) ,color=color,fontsize=FS, fontweight='bold')
+            elif np.mod(float(txt[0]), 3) == 1:
+                plt.annotate(txt, (Qxy_list[i]+0.005*2, Qz_list[i]-0.01*5) ,color=color,fontsize=FS, fontweight='bold')
+            else:
+                plt.annotate(txt, (Qxy_list[i]+0.005*2, Qz_list[i]-0.01*15) ,color=color,fontsize=FS, fontweight='bold')
 
     if 0:
         ax2 = fig.add_subplot(122)
@@ -596,9 +600,9 @@ def d_spacing(h,k,l, lattice, verbose=0):
 # Calc angle between planes
 #
 # lattice=(5.83, 7.88, 29.18, 90/180*pi, 99.4/180*pi, 90/180*pi)
-# angle_interplane(0,0,1,1,1,0,lattice)
+# angle_interplane(0,0,1, 1,1,0, lattice)
 ##########################
-def angle_interplane(h1,k1,l1, h2, k2, l2, lattice, verbose=0):
+def angle_interplane(h1,k1,l1,  h2,k2,l2,  lattice, verbose=0):
     [a,b,c,alp,beta,gam] = lattice
     V=a*b*c*sqrt(1+2*cos(alp)*cos(beta)*cos(gam)-cos(alp)**2-cos(beta)**2-cos(gam)**2)
 
